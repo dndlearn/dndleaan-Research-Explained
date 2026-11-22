@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Milk Oral Tolerance</title>
+<style>
+  /* Layout: flex body, sticky TOC sidebar left, 860px reading column right. Dark-only design system from research-explainer. */
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-subtle: #1f6feb22;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --teal: #2EC4B6;
+    --orange: #FF9F1C;
+    --analogy-bg: #1a2332;
+    --insight-bg: #1a2a1a;
+    --wrong-bg: #2a1a1a;
+    --video-bg: #011627;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-block: 2rem 5rem;
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+    display: flex;
+  }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Sidebar TOC */
+  .sidebar {
+    position: sticky; top: 1rem; align-self: flex-start;
+    width: 240px; flex-shrink: 0; max-height: calc(100vh - 2rem); overflow-y: auto;
+    padding-right: 1.25rem; border-right: 1px solid var(--border); margin-right: 2rem;
+    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  }
+  .sidebar-home { display: block; font-size: 0.8rem; color: var(--text-muted); text-decoration: none; margin-bottom: 1rem; }
+  .sidebar-home:hover { color: var(--accent); }
+  .sidebar .toc-title {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  }
+  .sidebar nav a {
+    display: block; color: var(--text-muted); text-decoration: none; font-size: 0.8rem; line-height: 1.4;
+    padding: 0.2rem 0 0.2rem 0.6rem; border-left: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+  }
+  .sidebar nav a:hover { color: var(--text); }
+  .sidebar nav a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+  .sidebar nav a.indent { padding-left: 1.4rem; font-size: 0.75rem; }
+  .sidebar nav a.section-gap { margin-top: 0.4rem; }
+
+  .main-content { flex: 1; min-width: 0; max-width: 860px; }
+
+  h1 { font-size: 2rem; line-height: 1.25; margin-bottom: 0.5rem; text-wrap: balance; }
+  h2 { font-size: 1.5rem; margin: 2.75rem 0 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; scroll-margin-top: 1rem; text-wrap: balance; }
+  h3 { font-size: 1.2rem; margin: 1.75rem 0 0.75rem; color: var(--purple); scroll-margin-top: 1rem; text-wrap: balance; }
+  p { margin-bottom: 1rem; }
+  .subtitle { color: var(--text-muted); margin-bottom: 0.5rem; font-size: 1.05rem; }
+  .meta { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  ul, ol { margin: 0.5rem 0 1rem 1.5rem; }
+  li { margin-bottom: 0.35rem; }
+  code, .math { background: var(--analogy-bg); padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.9rem; color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: nowrap; }
+  .formula { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9rem; color: var(--text); overflow-x: auto; white-space: pre; line-height: 1.6; }
+
+  /* Terms */
+  .term { color: var(--yellow); cursor: help; border-bottom: 1px dashed var(--yellow); position: relative; }
+  .term:hover, .term:focus { color: #e3b341; outline: none; }
+  .term .tooltip {
+    display: none; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.75rem 1rem; width: 320px; font-size: 0.85rem; color: var(--text); font-weight: 400;
+    z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.5); line-height: 1.5; white-space: normal; text-align: left;
+  }
+  .term:hover .tooltip, .term:focus .tooltip { display: block; }
+
+  /* Collapsible deep-dives */
+  details { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin: 1rem 0; overflow: visible; }
+  summary { padding: 0.75rem 1.5rem; cursor: pointer; font-weight: 600; user-select: none; list-style: none; display: flex; align-items: center; gap: 0.5rem; border-radius: 8px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '+'; color: var(--accent); font-family: ui-monospace, Menlo, monospace; font-size: 1.2rem; width: 1ch; }
+  details[open] summary::before { content: '-'; }
+  summary:hover { background: var(--accent-subtle); }
+  details .content { padding: 0 1.5rem 1.25rem; }
+  details .content ul, details .content ol { padding-left: 2.5rem; margin-left: 0; }
+
+  .analogy { background: var(--analogy-bg); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+  .analogy::before { content: 'Real-world analogy: '; font-weight: 700; color: var(--accent); }
+  .insight { background: var(--insight-bg); border-left: 4px solid var(--green); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1rem 0; }
+  .insight::before { content: 'Key Insight: '; font-weight: 700; color: var(--green); }
+
+  /* Banner */
+  .research-banner {
+    background: linear-gradient(135deg, #011627 0%, #0d2137 50%, #1a1a3a 100%);
+    border: 1px solid var(--teal); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 1.25rem;
+  }
+  .banner-icon { font-size: 2.2rem; flex-shrink: 0; }
+  .banner-text { flex: 1; min-width: 0; }
+  .banner-text p { margin: 0; font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
+  .banner-text p.banner-head { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+  .banner-links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.6rem; }
+  .banner-link { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; font-weight: 600; padding: 0.35rem 0.9rem; border-radius: 999px; border: 1px solid; text-decoration: none; transition: background 0.2s; }
+  .banner-link.primary { border-color: var(--teal); color: var(--teal); }
+  .banner-link.primary:hover { background: rgba(46,196,182,0.1); }
+  .banner-link.secondary { border-color: var(--border); color: var(--text-muted); }
+  .banner-link.secondary:hover { background: var(--accent-subtle); }
+
+  /* Problems list */
+  .problem-list { counter-reset: none; }
+
+  /* Architecture flow */
+  .arch-flow { display: flex; flex-direction: column; align-items: center; margin: 1.5rem 0; }
+  .arch-inputs { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+  .arch-input-tag { font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px; border: 1px solid; }
+  .tag-teal { color: var(--teal); border-color: var(--teal); }
+  .tag-orange { color: var(--orange); border-color: var(--orange); }
+  .tag-purple { color: var(--purple); border-color: var(--purple); }
+  .arch-arrow-down { width: 2px; height: 22px; background: var(--border); position: relative; margin-bottom: 6px; }
+  .arch-arrow-down::after { content: ''; position: absolute; bottom: -10px; left: -4px; border: 5px solid transparent; border-top: 6px solid var(--border); }
+  .arch-component { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 520px; }
+  .arch-component.arch-core { border-color: rgba(46,196,182,0.6); background: linear-gradient(135deg, var(--surface) 0%, rgba(46,196,182,0.07) 100%); }
+  .arch-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .arch-comp-name { font-size: 0.95rem; font-weight: 700; }
+  .arch-comp-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.35; margin-top: 0.1rem; }
+  .arch-output { font-size: 1rem; font-weight: 700; color: var(--green); padding: 0.4rem 1rem; border: 1px solid var(--green); border-radius: 8px; background: rgba(63,185,80,0.06); }
+
+  /* Pipeline */
+  .pipeline-stages { display: flex; align-items: center; margin: 1.5rem 0; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0.5rem 0; }
+  .pipe-stage { flex: 1; min-width: 120px; text-align: center; padding: 0.75rem 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; align-self: stretch; }
+  .pipe-num { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #0d1117; margin-bottom: 0.35rem; }
+  .pipe-name { font-size: 0.85rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.25rem; }
+  .pipe-desc { font-size: 0.75rem; color: var(--text-muted); font-style: italic; line-height: 1.3; }
+  .pipe-arrow { flex-shrink: 0; width: 24px; height: 2px; background: var(--border); position: relative; }
+  .pipe-arrow::after { content: ''; position: absolute; right: -3px; top: -4px; border: 5px solid transparent; border-left: 7px solid var(--border); }
+  .bg-blue { background: var(--accent); } .bg-purple { background: var(--purple); } .bg-orange { background: var(--orange); } .bg-teal { background: var(--teal); } .bg-green { background: var(--green); }
+
+  /* Stepper */
+  .stepper { margin: 1rem 0; padding-left: 0.5rem; }
+  .step { display: flex; align-items: flex-start; gap: 0.75rem; }
+  .step-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 0.5rem; position: relative; }
+  .step-dot::after { content: ''; position: absolute; top: 12px; left: 4px; width: 2px; height: calc(100% + 3.5rem); background: var(--border); }
+  .step-dot.last::after { display: none; }
+  .step-content { font-size: 0.93rem; padding-bottom: 1rem; line-height: 1.55; min-width: 0; }
+  .step-content strong { color: var(--text); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; margin: 1rem 0; }
+  .metrics-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .metrics-table th { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 2px solid var(--border); color: var(--text-muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+  .metrics-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .metrics-table tr:last-child td { border-bottom: none; }
+  .metrics-table tbody tr:hover { background: var(--accent-subtle); }
+  .metrics-table .val-best { color: var(--green); font-weight: 700; }
+  .metrics-table .num { text-align: right; white-space: nowrap; }
+  .metrics-table .muted { color: var(--text-muted); }
+  .table-note { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* Two column compare */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .compare-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; min-width: 0; }
+  .compare-card h4 { font-size: 0.95rem; margin-bottom: 0.4rem; }
+  .compare-card p { font-size: 0.9rem; margin: 0; color: var(--text-muted); }
+  .compare-card.orange h4 { color: var(--orange); } .compare-card.teal h4 { color: var(--teal); }
+
+  /* Videos */
+  .video-embed { margin: 1.5rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--video-bg); }
+  .video-embed video { display: block; width: 100%; height: auto; aspect-ratio: 1920 / 540; max-width: 100%; }
+  .video-caption { padding: 0.5rem 0.75rem; font-size: 0.82rem; color: var(--text-muted); background: var(--surface); display: flex; align-items: center; gap: 0.6rem; }
+  .video-caption .badge { display: inline-flex; flex-direction: column; align-items: center; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(46,196,182,0.15); color: var(--teal); text-decoration: none; white-space: nowrap; line-height: 1.2; flex-shrink: 0; }
+  .video-caption .badge-label { font-size: 0.55rem; color: #778DA9; text-transform: uppercase; letter-spacing: 0.05em; }
+  .video-caption .badge-name { font-size: 0.75rem; font-weight: 700; }
+  .video-caption .badge:hover { background: rgba(46,196,182,0.3); }
+
+  /* Quiz */
+  .quiz { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin: 1.25rem 0; }
+  .quiz-question { font-weight: 600; margin-bottom: 0.75rem; color: var(--purple); }
+  .quiz label { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.5rem 0.75rem; margin: 0.25rem 0; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+  .quiz label:hover { background: var(--accent-subtle); }
+  .quiz .feedback { margin-top: 0.75rem; padding: 0.75rem; border-radius: 6px; }
+  .quiz .feedback.correct { background: var(--insight-bg); color: var(--green); }
+  .quiz .feedback.wrong { background: var(--wrong-bg); color: var(--red); }
+  .quiz-btn { margin-top: 0.75rem; padding: 0.5rem 1.25rem; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  .quiz-btn:hover { opacity: 0.9; }
+
+  /* Progress, glossary, mobile toc */
+  .progress-bar { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--accent); z-index: 1002; }
+  .glossary-toggle {
+    position: fixed; bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); right: calc(1.5rem + env(safe-area-inset-right, 0px));
+    width: 50px; height: 50px; background: var(--accent); color: var(--bg); border: none; border-radius: 50%;
+    font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 999; display: flex; align-items: center; justify-content: center;
+  }
+  .glossary-panel {
+    position: fixed; bottom: calc(5rem + env(safe-area-inset-bottom, 0px)); right: calc(1.5rem + env(safe-area-inset-right, 0px));
+    width: 380px; max-height: 70vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.25rem; z-index: 998; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  }
+  .glossary-panel h3 { margin-top: 0; }
+  .glossary-panel input { width: 100%; padding: 0.5rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); margin-bottom: 0.75rem; font-size: 0.9rem; }
+  .glossary-entry { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+  .glossary-entry:last-child { border-bottom: none; }
+  .glossary-entry strong { color: var(--yellow); }
+  .glossary-entry p { font-size: 0.85rem; color: var(--text-muted); margin: 0.25rem 0 0; }
+  .glossary-empty { font-size: 0.85rem; color: var(--text-muted); }
+  .mobile-toc-btn {
+    display: none; position: fixed; bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); left: calc(1.5rem + env(safe-area-inset-left, 0px));
+    width: 44px; height: 44px; background: var(--accent); color: var(--bg); border: none; border-radius: 50%; font-size: 1.1rem;
+    cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 999; align-items: center; justify-content: center;
+  }
+  .mobile-overlay { display: none; }
+
+  @media (max-width: 900px) {
+    body { display: block; max-width: 860px; overflow-x: hidden; }
+    .sidebar {
+      position: fixed; top: 0; left: -290px; width: 270px; height: 100vh; max-height: 100vh;
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: calc(1rem + env(safe-area-inset-top, 0px)) 1rem 1rem calc(1rem + env(safe-area-inset-left, 0px));
+      margin-right: 0; z-index: 1001; transition: left 0.25s ease;
+    }
+    .sidebar.mobile-open { left: 0; }
+    .main-content { max-width: 100%; }
+    .mobile-toc-btn { display: flex; }
+    .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
+    .mobile-overlay.active { display: block; }
+    .glossary-panel { width: calc(100vw - 3rem); right: 1.5rem; }
+    .term .tooltip { width: calc(100vw - 4rem); max-width: 320px; left: 0; transform: none; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .arch-component { max-width: 100%; }
+    .research-banner { flex-direction: column; align-items: flex-start; }
+    h1 { font-size: 1.6rem; }
+  }
+  :root:not([data-lang="zh"]) [lang="zh-Hans"], :root[data-lang="zh"] [lang="en"] { display: none !important; }
+  [lang="zh-Hans"] { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.8; }
+  h1 [lang="zh-Hans"], h2 [lang="zh-Hans"], h3 [lang="zh-Hans"] { letter-spacing: 0.01em; }
+  .lang-toggle { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); right: max(16px, env(safe-area-inset-right, 0px)); z-index: 60; background: var(--accent); color: #0d1117; border: 0; border-radius: 999px; padding: 0.35rem 0.95rem; font-weight: 700; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.4); font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", -apple-system, sans-serif; }
+  .lang-toggle:hover { filter: brightness(1.1); }
+  .lang-toggle:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .meta a.lang-link { color: var(--accent); }
+  .widget { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin: 1.25rem 0; }
+  .widget-read { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.6rem; }
+  .lab-controls { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; font-size: 0.9rem; margin-bottom: 0.75rem; align-items: center; }
+  .lab-controls label { display: flex; align-items: center; gap: 0.5rem; }
+  .lab-controls .lab-input { flex: 1 1 260px; min-width: 0; }
+  .lab-controls select, .lab-controls input { font: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; }
+  .lab-controls input { flex: 1; min-width: 0; font-family: monospace; letter-spacing: 0.08em; }
+  .lab-controls select:focus-visible, .lab-controls input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .legend-row .lg { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .seq-tiles { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 0.75rem; }
+  .tile { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; color: #011627; font-family: monospace; }
+  .tile.sm { width: 18px; height: 18px; font-size: 0.65rem; }
+  .arr { color: var(--text-muted); margin: 0 2px; font-size: 0.8rem; }
+  .wname { color: var(--text-muted); font-size: 0.78rem; margin-left: 0.4rem; }
+  #labTable tr.nosig td { opacity: 0.55; }
+  .heat-wrap { overflow-x: auto; }
+  #heat { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
+  @media (max-width: 900px) { .lang-toggle { top: calc(env(safe-area-inset-top, 0px) + 10px); } .wname { display: block; margin-left: 0; } .main-content { padding-top: 2.75rem; } h1 [lang="zh-Hans"] { font-size: 0.9em; } }
+  .sim-controls { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; font-size: 0.9rem; margin-bottom: 0.9rem; }
+  .sim-controls label { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .sim-controls input[type=range] { accent-color: var(--teal); width: 160px; max-width: 100%; }
+  .sim-controls input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sim-val { font-family: monospace; color: var(--orange); font-size: 0.9rem; }
+  .filter-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .filter-btn { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; }
+  .filter-btn[aria-pressed="true"] { background: var(--accent-subtle); border-color: var(--accent); color: var(--text); }
+  .filter-btn[aria-pressed="true"]::before { content: "✓ "; color: var(--accent); }
+  .filter-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sim-out2 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 0.9rem; }
+  .sim-out2 > div { display: flex; flex-direction: column; min-width: 0; }
+  .sim-big { font-size: 2rem; font-weight: 700; color: var(--orange); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .sim-lab { font-size: 0.82rem; color: var(--text-muted); }
+  .bar-wrap { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--border); }
+  .bar-in { background: var(--red); height: 100%; flex: none; }
+  .bar-out { background: var(--text-muted); opacity: 0.45; flex: 1; }
+  @media (max-width: 600px) { .sim-out2 { grid-template-columns: minmax(0, 1fr); } .sim-big { font-size: 1.6rem; } }
+  .seg-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .sim-controls .quiz-btn { margin: 0; }
+  #permSvg { width: 100%; max-width: 600px; height: auto; display: block; }
+  .metrics-table td.neg { color: var(--red); }
+  .warn-box { border: 1px solid var(--red); border-left: 4px solid var(--red); background: #2a1a1a; border-radius: 8px; padding: 0.9rem 1.1rem; margin: 1rem 0 1.5rem; }
+  .warn-box p { margin: 0; }
+  :root[data-lang="zh"] .analogy::before { content: '生活类比：'; }
+  :root[data-lang="zh"] .insight::before { content: '要点：'; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+<div class="mobile-overlay" id="overlay"></div>
+<button class="mobile-toc-btn" id="tocBtn" aria-label="Open table of contents">&#9776;</button>
+<button class="lang-toggle" id="langBtn" type="button" aria-label="Switch to Chinese">中文</button>
+
+<aside class="sidebar" id="sidebar">
+  <a href="../" class="sidebar-home"><span lang="en">&larr; All Papers</span><span lang="zh-Hans">&larr; 全部论文</span></a>
+  <div class="toc-title"><span lang="en">Contents</span><span lang="zh-Hans">目录</span></div>
+  <nav id="toc">
+    <a href="#big-picture"><span lang="en">The Big Picture</span><span lang="zh-Hans">全局概览</span></a>
+    <a href="#background" class="section-gap"><span lang="en">Background Concepts</span><span lang="zh-Hans">背景知识</span></a>
+    <a href="#bg-allergy" class="indent"><span lang="en">Severe milk allergy</span><span lang="zh-Hans">严重牛奶过敏</span></a>
+    <a href="#bg-trial" class="indent"><span lang="en">How the trial was set up</span><span lang="zh-Hans">试验如何设计</span></a>
+    <a href="#bg-tolerance" class="indent"><span lang="en">Desensitized or tolerant?</span><span lang="zh-Hans">脱敏还是耐受？</span></a>
+    <a href="#how-it-works" class="section-gap"><span lang="en">How It Works</span><span lang="zh-Hans">工作原理</span></a>
+    <a href="#hw-select" class="indent"><span lang="en">Choosing the children</span><span lang="zh-Hans">筛选受试儿童</span></a>
+    <a href="#hw-rush" class="indent"><span lang="en">Hospital "rush" phase</span><span lang="zh-Hans">住院“快速”阶段</span></a>
+    <a href="#hw-home" class="indent"><span lang="en">Slow phase at home</span><span lang="zh-Hans">居家缓慢阶段</span></a>
+    <a href="#data" class="section-gap"><span lang="en">Who Took Part</span><span lang="zh-Hans">受试者</span></a>
+    <a href="#results" class="section-gap"><span lang="en">Results</span><span lang="zh-Hans">结果</span></a>
+    <a href="#res-safety" class="indent"><span lang="en">Reactions along the way</span><span lang="zh-Hans">过程中的过敏反应</span></a>
+    <a href="#res-chance" class="indent"><span lang="en">Try it: could chance explain this?</span><span lang="zh-Hans">动手试：会是巧合吗？</span></a>
+    <a href="#quiz" class="section-gap"><span lang="en">Final Quiz</span><span lang="zh-Hans">小测验</span></a>
+    <a href="#why-it-matters" class="section-gap"><span lang="en">Why This Paper Matters</span><span lang="zh-Hans">这篇论文为什么重要</span></a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <h1><span lang="en">Oral Tolerance Induction for Severe Milk Allergy: The Paper, Explained</span><span lang="zh-Hans">严重牛奶过敏的口服耐受诱导：论文详解</span></h1>
+  <p class="subtitle" lang="en">A beginner-friendly guide to <em>Specific oral tolerance induction in children with very severe cow's milk–induced reactions</em>. Every medical term is defined. Every concept is grounded in analogy.</p>
+  <p class="subtitle" lang="zh-Hans">一份面向初学者的论文导读：<em>Specific oral tolerance induction in children with very severe cow's milk–induced reactions</em>（《对牛奶引起极严重过敏反应儿童的特异性口服耐受诱导》）。每个医学术语都有解释，每个概念都配有生活中的类比。</p>
+  <p class="meta" lang="en">Paper by Giorgio Longo, Egidio Barbi, Irene Berti, Rosanna Meneghetti, Angela Pittalis, Luca Ronfani and Alessandro Ventura (I.R.C.C.S. "Burlo Garofolo" Children's Hospital, University of Trieste, 2008; <em>J Allergy Clin Immunol</em> 121:343–7) &middot; Explainer published November 22, 2026 &middot; <a href="#" class="lang-link" data-to="zh">中文版</a></p>
+  <p class="meta" lang="zh-Hans">论文作者：Giorgio Longo、Egidio Barbi、Irene Berti、Rosanna Meneghetti、Angela Pittalis、Luca Ronfani、Alessandro Ventura（意大利的里雅斯特大学 “Burlo Garofolo” 儿童医院，2008 年；<em>J Allergy Clin Immunol</em> 第 121 卷 343–347 页）&middot; 导读发布于 2026 年 11 月 22 日 &middot; <a href="#" class="lang-link" data-to="en">English</a></p>
+
+  <div class="warn-box">
+    <p lang="en"><strong>Not medical advice.</strong> This page explains a research study for learning purposes. The treatment it describes caused frequent allergic reactions, some needing adrenaline (epinephrine), and was carried out under close specialist supervision with hospital admission and 24-hour support. Never try to give an allergic child the food they react to outside such a programme. Talk to an allergy specialist about options.</p>
+    <p lang="zh-Hans"><strong>不是医疗建议。</strong>本页仅出于学习目的解读一项研究。研究中的治疗方法经常引起过敏反应，有些需要使用肾上腺素，而且是在专科医生密切监护、住院并有 24 小时支持的条件下进行的。切勿在这样的医疗项目之外，自行让过敏儿童食用其过敏的食物。请向过敏专科医生咨询可选方案。</p>
+  </div>
+
+  <div class="research-banner">
+    <div class="banner-icon">&#x1F95B;</div>
+    <div class="banner-text">
+      <p class="banner-head"><span lang="en">Read the original paper</span><span lang="zh-Hans">阅读论文原文</span></p>
+      <p lang="en">A randomized clinical trial from a children's hospital in Trieste, Italy, published as an Editors' choice article in 2008. It was the first trial to try oral tolerance induction in children with the most severe, life-threatening milk allergy, a group earlier studies had left out.</p>
+      <p lang="zh-Hans">这是意大利的里雅斯特一家儿童医院开展的随机临床试验，2008 年作为“编辑推荐”文章发表。它首次在牛奶过敏最严重、可能危及生命的儿童中尝试口服耐受诱导，此前的研究都把这类儿童排除在外。</p>
+      <div class="banner-links">
+        <a class="banner-link primary" href="https://doi.org/10.1016/j.jaci.2007.10.029" target="_blank" rel="noopener"><span lang="en">Paper (DOI) &rarr;</span><span lang="zh-Hans">论文（DOI）&rarr;</span></a>
+        <a class="banner-link secondary" href="https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2025.1570050/full" target="_blank" rel="noopener"><span lang="en">2025 meta-analysis</span><span lang="zh-Hans">2025 年荟萃分析</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BIG PICTURE ============ -->
+  <h2 id="big-picture"><span lang="en">The Big Picture</span><span lang="zh-Hans">全局概览</span></h2>
+  <p lang="en">Some children are so allergic to cow's milk that a few drops, or even skin contact, can trigger a dangerous reaction. The standard approach was strict avoidance plus an adrenaline auto-injector, which leaves families living in fear because milk hides in so many foods. This team asked whether giving these children tiny, slowly increasing amounts of milk, first in hospital and then at home, could train their bodies to accept it.</p>
+  <p lang="zh-Hans">有些孩子对牛奶过敏到这种程度：几滴牛奶，甚至只是皮肤接触，就可能引起危险的反应。过去的标准做法是严格回避，再随身携带肾上腺素自动注射笔；但牛奶藏在太多食物里，全家人只能提心吊胆地生活。这支团队想知道：如果先在医院、再在家里，给这些孩子极少量、慢慢增加的牛奶，能否让他们的身体学会接受它？</p>
+  <ol class="problem-list">
+    <li><span lang="en"><strong>The most severe cases.</strong> Children aged 5–17 with very high milk antibody levels and at least one past reaction needing emergency treatment, a group excluded from earlier studies.</span><span lang="zh-Hans"><strong>最严重的病例。</strong>5–17 岁、牛奶抗体水平极高、至少有过一次需要急诊处理的反应的儿童，这类孩子以前的研究都没有纳入。</span></li>
+    <li><span lang="en"><strong>A fair comparison.</strong> 60 children who reacted to very small amounts were randomly split: 30 started treatment, 30 kept avoiding milk for a year.</span><span lang="zh-Hans"><strong>公平的比较。</strong>60 名对极少量牛奶就有反应的儿童被随机分成两组：30 人开始治疗，30 人继续避免牛奶一年。</span></li>
+    <li><span lang="en"><strong>Safety as the main concern.</strong> Doses started in hospital with emergency equipment ready, and families had round-the-clock phone support at home.</span><span lang="zh-Hans"><strong>安全是首要考虑。</strong>起始剂量在医院给予，急救设备随时待命；回家后，家庭可以全天候打电话求助。</span></li>
+  </ol>
+  <div class="insight"><span lang="en">After one year, 11 of 30 treated children (36%) could drink at least 150 mL of milk, about a glass, and 16 more (54%) could take 5–150 mL. None of the 30 children who avoided milk improved. But reactions during treatment were very common, and 3 children had to stop.</span><span lang="zh-Hans">一年后，治疗组 30 人中有 11 人（36%）能喝下至少 150 毫升牛奶（约一杯），另有 16 人（54%）能耐受 5–150 毫升。坚持回避牛奶的 30 名儿童没有一人好转。但治疗过程中过敏反应非常常见，有 3 名儿童不得不中止。</span></div>
+
+  <!-- ============ BACKGROUND ============ -->
+  <h2 id="background"><span lang="en">Background Concepts</span><span lang="zh-Hans">背景知识</span></h2>
+
+  <h3 id="bg-allergy"><span lang="en">Severe milk allergy</span><span lang="zh-Hans">严重牛奶过敏</span></h3>
+  <p lang="en">In a food allergy, the immune system makes <span class="term" tabindex="0">IgE antibodies<span class="tooltip">Immunoglobulin E: antibodies that, in allergy, recognise a harmless food protein and trigger the release of histamine and other chemicals.</span></span> against a harmless food protein, here <span class="term" tabindex="0">cow's milk proteins (CMPs)<span class="tooltip">Proteins in milk such as casein, β-lactoglobulin and α-lactalbumin; the parts the immune system reacts to.</span></span>. When the protein reaches <span class="term" tabindex="0">mast cells<span class="tooltip">Immune cells in skin, gut and airways loaded with histamine; IgE on their surface makes them release it when the allergen binds.</span></span> coated with IgE, they release histamine, causing hives, vomiting, throat swelling or breathing trouble. The most severe form is <span class="term" tabindex="0">anaphylaxis<span class="tooltip">A fast, whole-body allergic reaction that can affect breathing and blood pressure and can be fatal without prompt treatment.</span></span>, treated first with <span class="term" tabindex="0">epinephrine (adrenaline)<span class="tooltip">The first-line emergency medicine for anaphylaxis; it opens the airways and supports blood pressure.</span></span>.</p>
+  <p lang="zh-Hans">发生食物过敏时，免疫系统会针对一种本来无害的食物蛋白产生 <span class="term" tabindex="0">IgE 抗体（IgE antibodies）<span class="tooltip">免疫球蛋白 E：在过敏中，它会识别无害的食物蛋白，并触发组胺等化学物质的释放。</span></span>，这里的蛋白是<span class="term" tabindex="0">牛奶蛋白（cow's milk proteins, CMPs）<span class="tooltip">牛奶中的酪蛋白、β-乳球蛋白、α-乳白蛋白等，是免疫系统发生反应的部分。</span></span>。当这些蛋白接触到表面带有 IgE 的<span class="term" tabindex="0">肥大细胞（mast cells）<span class="tooltip">分布在皮肤、肠道和呼吸道中、储存大量组胺的免疫细胞；过敏原与其表面的 IgE 结合时，它们就会释放组胺。</span></span>，这些细胞就会释放组胺，引起荨麻疹、呕吐、喉咙肿胀或呼吸困难。最严重的形式是<span class="term" tabindex="0">严重过敏反应（anaphylaxis）<span class="tooltip">迅速发生的全身性过敏反应，可影响呼吸和血压，若不及时治疗可能致命。</span></span>，首选急救药物是<span class="term" tabindex="0">肾上腺素（epinephrine）<span class="tooltip">严重过敏反应的一线急救药，能扩张气道、维持血压。</span></span>。</p>
+  <div class="analogy"><span lang="en">An over-sensitive smoke alarm that goes off at a candle: the alarm itself (IgE on mast cells) is fine, but it has been set to treat something harmless as a fire.</span><span lang="zh-Hans">就像一个过于灵敏的烟雾报警器，点根蜡烛就响：报警器本身（肥大细胞上的 IgE）没坏，只是被设定成把无害的东西当成了火灾。</span></div>
+  <p lang="en">Doctors measure milk-specific IgE in the blood in <span class="term" tabindex="0">kUA/L<span class="tooltip">Kilo-units of allergen-specific antibody per litre of blood, the unit of the CAP test. Very high values (here above 85) predict reactions and make spontaneous recovery unlikely.</span></span>; every child here was above 85, and the lab test topped out at 100. Reactions are graded 1 to 5 with the <span class="term" tabindex="0">Clark and Ewan scale<span class="tooltip">Grades 1–3 are mild (skin, gut, nose/eyes); grade 4 is moderate (mild throat swelling or mild asthma); grade 5 is severe (marked breathing difficulty, collapse or loss of consciousness).</span></span>.</p>
+  <p lang="zh-Hans">医生用 <span class="term" tabindex="0">kUA/L<span class="tooltip">每升血液中过敏原特异性抗体的千单位数，是 CAP 检测的单位。数值很高（本研究中高于 85）预示容易过敏，也意味着自然好转的可能性很小。</span></span>来衡量血液中牛奶特异性 IgE 的水平；本研究每个孩子都高于 85，而检测上限是 100。过敏反应按 <span class="term" tabindex="0">Clark 与 Ewan 分级（Clark and Ewan scale）<span class="tooltip">1–3 级为轻度（皮肤、胃肠、鼻眼症状）；4 级为中度（轻度喉头水肿或轻度哮喘）；5 级为重度（明显呼吸困难、虚脱或意识丧失）。</span></span>分为 1–5 级。</p>
+
+  <h3 id="bg-trial"><span lang="en">How the trial was set up</span><span lang="zh-Hans">试验如何设计</span></h3>
+  <p lang="en">This is a <span class="term" tabindex="0">randomized controlled trial<span class="tooltip">A study in which participants are assigned to treatment or control by chance, so the groups are alike except for the treatment.</span></span>. Allergy was first confirmed with a <span class="term" tabindex="0">double-blind, placebo-controlled food challenge (DBPCFC)<span class="tooltip">The gold-standard allergy test: the child gets increasing amounts of the food or a look-alike placebo, and neither the family nor the staff giving it know which.</span></span>. Children were then assigned to groups using <span class="term" tabindex="0">sealed envelopes<span class="tooltip">Sequentially numbered, opaque, sealed envelopes holding computer-generated group assignments, so no one can choose or predict the next child's group.</span></span>. The treatment itself was not blinded: families knew which group they were in.</p>
+  <p lang="zh-Hans">这是一项<span class="term" tabindex="0">随机对照试验（randomized controlled trial）<span class="tooltip">靠随机方式把参与者分到治疗组或对照组的研究，这样两组除了治疗之外大体相同。</span></span>。首先用<span class="term" tabindex="0">双盲安慰剂对照食物激发试验（DBPCFC）<span class="tooltip">过敏诊断的“金标准”：给孩子逐渐增量的食物或外观相同的安慰剂，家长和执行的医护人员都不知道给的是哪一种。</span></span>确认过敏。然后用<span class="term" tabindex="0">密封信封（sealed envelopes）<span class="tooltip">按顺序编号、不透明、密封的信封，里面装着电脑生成的分组结果，谁都无法挑选或预测下一个孩子的组别。</span></span>把孩子分组。治疗本身并不设盲：家庭知道自己在哪一组。</p>
+  <div class="analogy"><span lang="en">Like a taste test where neither the taster nor the server knows which cup is the real drink: it keeps expectations from colouring the result.</span><span lang="zh-Hans">就像盲品：品尝者和端杯子的人都不知道哪杯是真的饮料，这样期待就不会影响结果。</span></div>
+
+  <h3 id="bg-tolerance"><span lang="en">Desensitized or tolerant?</span><span lang="zh-Hans">脱敏还是耐受？</span></h3>
+  <p lang="en"><span class="term" tabindex="0">Specific oral tolerance induction (SOTI)<span class="tooltip">Giving a child gradually increasing amounts of the food they are allergic to, by mouth, under medical supervision; today usually called oral immunotherapy (OIT).</span></span>, today usually called oral immunotherapy (OIT), aims to raise the amount a child can eat without reacting. Researchers distinguish <span class="term" tabindex="0">desensitization<span class="tooltip">Being able to eat the food only while taking it regularly; protection may fade if daily intake stops.</span></span>, protection that lasts only while the food is eaten regularly, from lasting <span class="term" tabindex="0">tolerance<span class="tooltip">Protection that persists even after the food is stopped for a while; often tested as "sustained unresponsiveness".</span></span>. This one-year study could not tell which one it achieved, and the authors say so.</p>
+  <p lang="zh-Hans"><span class="term" tabindex="0">特异性口服耐受诱导（SOTI）<span class="tooltip">在医生监护下，让孩子经口服用逐渐增加的过敏食物；现在通常称为口服免疫治疗（OIT）。</span></span>（现在一般叫口服免疫治疗，OIT）的目的是提高孩子不发生反应时能吃下的量。研究者会区分<span class="term" tabindex="0">脱敏（desensitization）<span class="tooltip">只有在规律食用期间才能吃这种食物；停止每日摄入后，保护作用可能消失。</span></span>和长期的<span class="term" tabindex="0">耐受（tolerance）<span class="tooltip">停用这种食物一段时间后保护作用依然存在；常以“持续无反应”来检验。</span></span>：前者的保护只在规律食用时存在。这项为期一年的研究无法判断达到的是哪一种，作者也明确承认了这一点。</p>
+  <div class="analogy"><span lang="en">Like getting used to cold water by swimming every day: you may lose the adaptation if you stop for months. Whether milk tolerance stays without daily milk is the open question.</span><span lang="zh-Hans">就像天天冬泳慢慢适应冷水：停几个月可能就不适应了。不每天喝奶，对牛奶的耐受能否保持，仍是个悬而未决的问题。</span></div>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <h2 id="how-it-works"><span lang="en">How It Works</span><span lang="zh-Hans">工作原理</span></h2>
+  <div class="arch-flow">
+    <div class="arch-inputs">
+      <span class="arch-input-tag tag-teal"><span lang="en">97 severe cases</span><span lang="zh-Hans">97 例重症</span></span>
+    </div>
+    <div class="arch-arrow-down"></div>
+    <div class="arch-component"><div class="arch-icon">&#x1F9EA;</div><div><div class="arch-comp-name"><span lang="en">Blind food challenge</span><span lang="zh-Hans">盲法食物激发试验</span></div><div class="arch-comp-desc"><span lang="en">Kept only children reacting to 0.8 mL of milk or less</span><span lang="zh-Hans">只保留对 0.8 毫升及以下牛奶就有反应的儿童</span></div></div></div>
+    <div class="arch-arrow-down"></div>
+    <div class="arch-component"><div class="arch-icon">&#x2709;&#xFE0F;</div><div><div class="arch-comp-name"><span lang="en">Random assignment</span><span lang="zh-Hans">随机分组</span></div><div class="arch-comp-desc"><span lang="en">30 to SOTI (group A), 30 to milk-free diet (group B)</span><span lang="zh-Hans">30 人进入 SOTI 组（A 组），30 人进入无奶饮食组（B 组）</span></div></div></div>
+    <div class="arch-arrow-down"></div>
+    <div class="arch-component arch-core"><div class="arch-icon">&#x1F3E5;</div><div><div class="arch-comp-name"><span lang="en">10 days in hospital (group A)</span><span lang="zh-Hans">住院 10 天（A 组）</span></div><div class="arch-comp-desc"><span lang="en">Rapid increases from diluted drops toward 20 mL of milk, with antihistamine, an IV line and an emergency kit</span><span lang="zh-Hans">从稀释后的几滴快速增加到 20 毫升牛奶，同时服用抗组胺药，留置静脉通路，备好急救设备</span></div></div></div>
+    <div class="arch-arrow-down"></div>
+    <div class="arch-component"><div class="arch-icon">&#x1F3E0;</div><div><div class="arch-comp-name"><span lang="en">Months at home</span><span lang="zh-Hans">居家数月</span></div><div class="arch-comp-desc"><span lang="en">Slow, personalized increases, trained parents, 24-hour phone line</span><span lang="zh-Hans">个性化的缓慢加量、接受过培训的家长、24 小时电话热线</span></div></div></div>
+    <div class="arch-arrow-down"></div>
+    <div class="arch-output"><span lang="en">outcome at 1 year</span><span lang="zh-Hans">1 年时的结局</span></div>
+  </div>
+
+  <h3 id="hw-select"><span lang="en">Choosing the children</span><span lang="zh-Hans">筛选受试儿童</span></h3>
+  <p lang="en">The challenge began with a drop of milk diluted ten times, doubling every 20 minutes. Only children who reacted by 0.8 mL of whole milk or less were eligible: in 9 of the 60, the threshold was below 0.1 mL. Families with limited access to emergency care, a history of unreliable handling of treatments, or poorly controlled asthma were excluded, because the treatment depends on quick, correct responses to reactions.</p>
+  <p lang="zh-Hans">激发试验从一滴稀释 10 倍的牛奶开始，每 20 分钟加倍。只有在 0.8 毫升全脂牛奶以内就出现反应的儿童才符合条件：60 人中有 9 人的阈值低于 0.1 毫升。附近急救条件有限、过去处理治疗不可靠，或哮喘控制不佳的家庭被排除在外，因为这种治疗依赖于对过敏反应作出迅速、正确的处理。</p>
+
+  <h3 id="hw-rush"><span lang="en">Hospital "rush" phase</span><span lang="zh-Hans">住院“快速”阶段</span></h3>
+  <p lang="en">Group A spent 10 days in hospital. Doses were given several times a day, starting with milk heavily diluted in water and becoming stronger each day until children took undiluted milk, with a planned target of 20 mL. All children took a daily <span class="term" tabindex="0">antihistamine<span class="tooltip">A medicine that blocks histamine and dampens mild allergy symptoms like itching and hives; here oxatomide.</span></span>, had an IV line in place, and the team used inhaled (nebulized) epinephrine early for breathing symptoms. Only 9 of 30 reached the 20 mL target in hospital; the rest stayed at lower doses because of frequent reactions.</p>
+  <p lang="zh-Hans">A 组住院 10 天。每天给药数次，起初是用水大量稀释的牛奶，之后每天浓度提高，直到孩子能喝未经稀释的牛奶，计划目标为 20 毫升。所有孩子每天服用<span class="term" tabindex="0">抗组胺药（antihistamine）<span class="tooltip">阻断组胺、减轻瘙痒、荨麻疹等轻度过敏症状的药物；本研究用的是奥沙米特。</span></span>，留置静脉通路，一旦出现呼吸道症状，医疗团队会及早使用雾化吸入的肾上腺素。30 人中只有 9 人在住院期间达到 20 毫升的目标，其余孩子因频繁过敏反应停留在较低剂量。</p>
+  <div class="video-embed">
+    <video src="videos/ladder.mp4" data-en="videos/ladder.mp4" data-zh="videos/ladder-zh.mp4" autoplay muted loop playsinline></video>
+    <div class="video-caption"><a href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noopener" class="badge" title="Made with HyperFrames — HeyGen's HTML-to-video composition framework"><span class="badge-label">made with</span><span class="badge-name">HyperFrames</span></a> <span lang="en">Schematic only, not a dosing schedule (log scale). Treated children moved from drops to about 20 mL in hospital, then slowly upward at home; after a year, 11 reached 150 mL or more, 16 settled between 5 and 150 mL, and 3 stopped. The milk-free group stayed in the range where they had reacted.</span><span lang="zh-Hans">仅为示意图，不是给药方案（对数刻度）。治疗组儿童在医院从几滴增加到约 20 毫升，回家后再缓慢增加；一年后，11 人达到 150 毫升或以上，16 人稳定在 5–150 毫升之间，3 人中止。无奶饮食组一直停留在原先会过敏的范围内。</span></div>
+  </div>
+
+  <h3 id="hw-home" ><span lang="en">Slow phase at home</span><span lang="zh-Hans">居家缓慢阶段</span></h3>
+  <p lang="en">At home, parents raised the dose very gradually, adjusted to each child's reactions and the family's confidence, following written instructions. They were trained to treat reactions, including with inhaled and self-injected epinephrine, and could call the team 24 hours a day. Children avoided exercise for 3 hours after milk, because exercise can trigger reactions. Once a child could take 150 mL at once, other dairy foods were added. Treatment counted as failed if a child couldn't take at least 5 mL after a year, or had to stop because of reactions.</p>
+  <p lang="zh-Hans">回家后，家长按照书面说明，根据孩子的反应和家庭的把握程度，非常缓慢地增加剂量。家长接受过处理过敏反应的培训，包括使用雾化吸入和自我注射的肾上腺素，并且可以 24 小时随时联系医疗团队。孩子在喝奶后 3 小时内避免运动，因为运动可能诱发过敏反应。孩子一次能喝下 150 毫升后，再逐步加入其他乳制品。如果一年后仍不能喝下至少 5 毫升，或因过敏反应不得不停止，就算治疗失败。</p>
+  <div class="analogy"><span lang="en">Like a mountain climber acclimatizing to altitude: climb a little, rest, climb again, always with a guide and a way down if something goes wrong.</span><span lang="zh-Hans">就像登山者适应高海拔：爬一段、歇一歇、再往上，始终有向导陪同，出现问题时也有下撤的路。</span></div>
+
+  <!-- ============ DATA ============ -->
+  <h2 id="data"><span lang="en">Who Took Part</span><span lang="zh-Hans">受试者</span></h2>
+  <div class="stepper">
+    <div class="step"><div class="step-dot"></div><div class="step-content"><span lang="en"><strong>97 children</strong> aged 5–17, seen January 2003 – December 2005, with milk IgE above 85 kUA/L and a past reaction of grade 4 or 5 needing emergency care.</span><span lang="zh-Hans"><strong>97 名儿童</strong>，5–17 岁，于 2003 年 1 月至 2005 年 12 月就诊，牛奶 IgE 高于 85 kUA/L，曾有过需要急诊处理的 4 级或 5 级反应。</span></div></div>
+    <div class="step"><div class="step-dot"></div><div class="step-content"><span lang="en"><strong>72</strong> reacted to 0.8 mL of milk or less in the blind challenge.</span><span lang="zh-Hans"><strong>72 人</strong>在盲法激发试验中对 0.8 毫升及以下牛奶有反应。</span></div></div>
+    <div class="step"><div class="step-dot"></div><div class="step-content"><span lang="en"><strong>12 not enrolled:</strong> 5 met an exclusion criterion and the parents of 7 declined.</span><span lang="zh-Hans"><strong>12 人未入组：</strong>5 人符合排除标准，7 人的家长拒绝参加。</span></div></div>
+    <div class="step"><div class="step-dot"></div><div class="step-content"><span lang="en"><strong>60 randomized</strong>: 30 per group, similar in age (mean about 8), sex, skin test, IgE and challenge threshold (Table II).</span><span lang="zh-Hans"><strong>60 人随机分组</strong>：每组 30 人，年龄（平均约 8 岁）、性别、皮肤试验、IgE 和激发阈值都相近（表 II）。</span></div></div>
+  </div>
+  <details>
+    <summary><span lang="en">Why 30 per group? (sample size)</span><span lang="zh-Hans">为什么每组 30 人？（样本量）</span></summary>
+    <div class="content">
+      <p lang="en">The team assumed full success in 35% of treated children versus spontaneous recovery in 5% of untreated ones. To detect that difference with 80% <span class="term" tabindex="0">statistical power<span class="tooltip">The chance a study detects a real effect of the assumed size; 80% is a common target.</span></span> at a 5% false-alarm rate, they needed 60 children.</p>
+      <p lang="zh-Hans">团队假设治疗组完全成功率为 35%，未治疗组自然好转率为 5%。要在 5% 的误报率下以 80% 的<span class="term" tabindex="0">统计功效（statistical power）<span class="tooltip">研究能检测出预设大小的真实效果的概率；80% 是常用目标。</span></span>检测出这个差异，需要 60 名儿童。</p>
+    </div>
+  </details>
+
+  <!-- ============ RESULTS ============ -->
+  <h2 id="results"><span lang="en">Results</span><span lang="zh-Hans">结果</span></h2>
+  <div class="video-embed">
+    <video src="videos/outcomes.mp4" data-en="videos/outcomes.mp4" data-zh="videos/outcomes-zh.mp4" autoplay muted loop playsinline></video>
+    <div class="video-caption"><a href="https://github.com/heygen-com/hyperframes" target="_blank" rel="noopener" class="badge" title="Made with HyperFrames — HeyGen's HTML-to-video composition framework"><span class="badge-label">made with</span><span class="badge-name">HyperFrames</span></a> <span lang="en">Each dot is one child. After one year: in the SOTI group, 11 took 150 mL or more, 16 took 5–150 mL and 3 stopped; in the milk-free group, all 30 still reacted in a second blind challenge.</span><span lang="zh-Hans">每个点代表一名儿童。一年后：SOTI 组中 11 人能喝 150 毫升或以上，16 人能喝 5–150 毫升，3 人中止；无奶饮食组 30 人在第二次盲法激发试验中仍然全部过敏。</span></div>
+  </div>
+  <div class="table-wrap">
+    <table class="metrics-table">
+      <thead><tr><th><span lang="en">Outcome at 1 year</span><span lang="zh-Hans">1 年时的结局</span></th><th class="num"><span lang="en">SOTI (A)</span><span lang="zh-Hans">SOTI 组（A）</span></th><th class="num"><span lang="en">Milk-free (B)</span><span lang="zh-Hans">无奶组（B）</span></th></tr></thead>
+      <tbody>
+        <tr><td><span lang="en">150 mL or more in one dose</span><span lang="zh-Hans">单次 150 毫升或以上</span></td><td class="num val-best">11 (36%)</td><td class="num">0</td></tr>
+        <tr><td><span lang="en">5–150 mL (partial)</span><span lang="zh-Hans">5–150 毫升（部分耐受）</span></td><td class="num">16 (54%)</td><td class="num">0</td></tr>
+        <tr><td><span lang="en">Stopped because of reactions</span><span lang="zh-Hans">因过敏反应中止</span></td><td class="num neg">3 (10%)</td><td class="num">–</td></tr>
+        <tr><td><span lang="en">Still reacting to small amounts</span><span lang="zh-Hans">仍对少量牛奶过敏</span></td><td class="num">–</td><td class="num">30 (100%)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note"><span lang="en">Percentages as printed in the paper (11/30 is 36.7%, 16/30 is 53.3%). Both full (11 vs 0) and partial-or-better (27 vs 0) differences were significant, P &lt; .001. In group B, 1 child reached 2 mL and 2 reached 1 mL, but none 5 mL. Group A's outcome was checked by watching an open feeding of the daily dose, not by a second blind challenge, so the two groups were assessed differently.</span><span lang="zh-Hans">百分比按论文原文（11/30 实为 36.7%，16/30 实为 53.3%）。完全耐受（11 比 0）和部分耐受及以上（27 比 0）的差异都显著，P &lt; .001。B 组中 1 人达到 2 毫升，2 人达到 1 毫升，但没有人达到 5 毫升。A 组的结局是通过观察孩子在非盲条件下喝下每日剂量来确认的，而不是再做一次盲法激发试验，所以两组的评估方式不同。</span></p>
+  <p lang="en"><strong>Antibody levels.</strong> Milk IgE fell clearly in 15 of the 30 treated children at 6 and 12 months; in the milk-free group it was essentially unchanged (down slightly in 3, up in 1). Because the test can't read above 100, falls in other children may have been missed.</p>
+  <p lang="zh-Hans"><strong>抗体水平。</strong>治疗组 30 人中有 15 人的牛奶 IgE 在 6 个月和 12 个月时明显下降；无奶组基本不变（3 人略降，1 人上升）。由于检测上限是 100，其他孩子的下降可能没有测出来。</p>
+
+  <h3 id="res-safety"><span lang="en">Reactions along the way</span><span lang="zh-Hans">过程中的过敏反应</span></h3>
+  <p lang="en">Reactions were common in every treated child, mostly within minutes to 2 hours of a dose. No child had a grade 5 reaction, and none needed IV fluids, IV epinephrine, resuscitation or intubation. In group B, 6 children (20%) had mild reactions from accidental exposure during the year.</p>
+  <p lang="zh-Hans">每个接受治疗的孩子都出现过过敏反应，大多发生在服药后几分钟到 2 小时内。没有孩子出现 5 级反应，也没有人需要静脉补液、静脉注射肾上腺素、心肺复苏或气管插管。B 组在这一年中有 6 名儿童（20%）因意外接触牛奶出现轻度反应。</p>
+  <div class="table-wrap">
+    <table class="metrics-table">
+      <thead><tr><th><span lang="en">Group A (30 children)</span><span lang="zh-Hans">A 组（30 名儿童）</span></th><th class="num"><span lang="en">Hospital, 10 days: children (episodes)</span><span lang="zh-Hans">住院 10 天：人数（次数）</span></th><th class="num"><span lang="en">Home, 1 year: children (episodes)</span><span lang="zh-Hans">居家 1 年：人数（次数）</span></th></tr></thead>
+      <tbody>
+        <tr><td><span lang="en">Lip or mouth itching</span><span lang="zh-Hans">嘴唇或口腔瘙痒</span></td><td class="num">30 (355)</td><td class="num">14 (85)</td></tr>
+        <tr><td><span lang="en">Hives around the mouth</span><span lang="zh-Hans">口周荨麻疹</span></td><td class="num">28 (37)</td><td class="num">17 (22)</td></tr>
+        <tr><td><span lang="en">Redness or widespread hives</span><span lang="zh-Hans">皮肤发红或全身荨麻疹</span></td><td class="num">14 (17)</td><td class="num">7 (13)</td></tr>
+        <tr><td><span lang="en">Abdominal pain, with or without vomiting</span><span lang="zh-Hans">腹痛（伴或不伴呕吐）</span></td><td class="num">23 (47)</td><td class="num">14 (32)</td></tr>
+        <tr><td><span lang="en">Runny nose / itchy eyes</span><span lang="zh-Hans">流涕 / 眼痒</span></td><td class="num">18 (23)</td><td class="num">3 (8)</td></tr>
+        <tr><td><span lang="en">Mild throat tightening</span><span lang="zh-Hans">轻度喉痉挛</span></td><td class="num">14 (15)</td><td class="num">3 (5)</td></tr>
+        <tr><td><span lang="en">Mild wheezing</span><span lang="zh-Hans">轻度支气管痉挛</span></td><td class="num">12 (28)</td><td class="num">8 (19)</td></tr>
+        <tr><td><span lang="en">Treated with oral steroids</span><span lang="zh-Hans">使用口服激素</span></td><td class="num">8 (16)</td><td class="num">17 (35)</td></tr>
+        <tr><td><span lang="en">Treated with inhaled epinephrine</span><span lang="zh-Hans">使用雾化肾上腺素</span></td><td class="num">18 (22)</td><td class="num">6 (9)</td></tr>
+        <tr><td><span lang="en">Treated with injected epinephrine</span><span lang="zh-Hans">使用肌注肾上腺素</span></td><td class="num neg">4 (4)</td><td class="num neg">1 (1)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note"><span lang="en">From Table IV. Two children needed emergency-department care during home dosing.</span><span lang="zh-Hans">摘自表 IV。居家给药期间有 2 名儿童需要去急诊就医。</span></p>
+
+  <h3 id="res-chance"><span lang="en">Try it: could chance explain this?</span><span lang="zh-Hans">动手试：会是巧合吗？</span></h3>
+  <p lang="en">A <span class="term" tabindex="0">P value<span class="tooltip">The probability of seeing a difference at least this large if the treatment truly had no effect. Small values mean chance is an unlikely explanation.</span></span> asks: if treatment did nothing, how often would random group assignment alone produce a split this lopsided? This simulation takes the 60 children with their real outcomes, reshuffles them into two random groups of 30 many times, and counts how often one group gets all the successes.</p>
+  <p lang="zh-Hans"><span class="term" tabindex="0">P 值（P value）<span class="tooltip">如果治疗实际上毫无作用，观察到至少这么大差异的概率。数值很小，说明“碰巧”不太可能是原因。</span></span>问的是：如果治疗毫无作用，仅靠随机分组，多常会出现这么悬殊的结果？下面的模拟把 60 名儿童及其真实结局反复随机分成两组各 30 人，统计有多少次所有成功者都落在同一组。</p>
+  <div class="widget" id="permWidget">
+    <div class="sim-controls">
+      <div class="seg-row" id="permMode"></div>
+      <button type="button" class="quiz-btn" id="permRun"></button>
+    </div>
+    <div class="heat-wrap"><svg id="permSvg" viewBox="0 0 600 200" role="img" aria-label="Histogram of shuffled results"></svg></div>
+    <div class="sim-out2">
+      <div><span class="sim-big" id="oRuns"></span><span class="sim-lab" id="oRunsL"></span></div>
+      <div><span class="sim-big" id="oHits"></span><span class="sim-lab" id="oHitsL"></span></div>
+      <div><span class="sim-big" id="oExact"></span><span class="sim-lab" id="oExactL"></span></div>
+    </div>
+    <p class="widget-read" id="permNote"></p>
+  </div>
+
+  <details>
+    <summary><span lang="en">Limitations</span><span lang="zh-Hans">局限</span></summary>
+    <div class="content">
+      <ul lang="en">
+        <li>Small (30 per group), one centre, one year of follow-up; the authors say this can't estimate the true risk of fatal or near-fatal events during treatment.</li>
+        <li>Not blinded, and the groups' outcomes were measured differently (open feeding vs blind challenge).</li>
+        <li>It can't tell whether protection lasts if children stop drinking milk; the authors advise continuing daily milk.</li>
+        <li>The families were highly motivated and carefully selected, with emergency care nearby, so results may not carry over to other settings.</li>
+        <li>The authors note one year is too short to rule out spontaneous recovery in the control group.</li>
+      </ul>
+      <ul lang="zh-Hans">
+        <li>规模小（每组 30 人）、单中心、随访一年；作者表示，这不足以估计治疗中致命或接近致命事件的真实风险。</li>
+        <li>没有设盲，两组结局的测量方式也不同（非盲喂食对比盲法激发）。</li>
+        <li>无法判断孩子停喝牛奶后保护作用是否持续；作者建议每天继续喝奶。</li>
+        <li>参与家庭积极性很高、经过严格筛选，附近有急救条件，结果未必适用于其他环境。</li>
+        <li>作者也指出，一年时间太短，不能排除对照组自然好转的可能。</li>
+      </ul>
+    </div>
+  </details>
+
+  <!-- ============ QUIZ ============ -->
+  <h2 id="quiz"><span lang="en">Final Quiz</span><span lang="zh-Hans">小测验</span></h2>
+  <p><span lang="en">Check your understanding of the key ideas.</span><span lang="zh-Hans">检验一下你对关键概念的理解。</span></p>
+  <div id="quiz-container"></div>
+
+  <!-- ============ WHY IT MATTERS ============ -->
+  <h2 id="why-it-matters"><span lang="en">Why This Paper Matters</span><span lang="zh-Hans">这篇论文为什么重要</span></h2>
+  <h3><span lang="en">For patients and clinicians</span><span lang="zh-Hans">对患者和医生</span></h3>
+  <p lang="en">Even partial success changes daily life: a child who can take 5–150 mL is much less likely to react badly to a hidden trace of milk, and parents of treated children reported great satisfaction, even when the gains were partial. The authors stress the cost: frequent reactions, a heavy commitment from family and medical team, and the need for highly controlled settings. They describe it as "no magic bullet".</p>
+  <p lang="zh-Hans">即使只是部分成功，也会改变日常生活：能耐受 5–150 毫升的孩子，误食隐藏的微量牛奶时发生严重反应的可能性小得多；治疗组家长普遍非常满意，即便效果只是部分的。作者也强调了代价：过敏反应频繁，家庭和医疗团队都要投入大量精力，而且必须在高度可控的环境中进行。他们称之为“没有灵丹妙药”。</p>
+  <h3><span lang="en">For the research community</span><span lang="zh-Hans">对研究界</span></h3>
+  <p lang="en">This was the first randomized trial of oral tolerance induction in the most severely milk-allergic children, a group earlier studies excluded. Many trials followed. A 2025 meta-analysis of 19 randomized trials (815 children) found that milk oral immunotherapy made desensitization about 2.5 times more likely (RR 2.51, 95% CI 1.54–4.09), with low overall study quality, high variation between studies, and no trial reporting lasting tolerance after stopping. It also found eosinophilic oesophagitis, a gullet inflammation, in about 4% of treated children in cohort studies.</p>
+  <p lang="zh-Hans">这是首个在牛奶过敏最严重的儿童中进行的口服耐受诱导随机试验，此前的研究都排除了这类儿童。此后又有许多试验跟进。2025 年一项纳入 19 项随机试验（815 名儿童）的荟萃分析发现，牛奶口服免疫治疗使达到脱敏的可能性提高约 2.5 倍（RR 2.51，95% CI 1.54–4.09）；但研究总体质量偏低、各研究差异很大，而且没有一项试验报告停药后的持续耐受。该分析还发现，在队列研究中约 4% 的治疗儿童出现了嗜酸性粒细胞性食管炎（一种食管炎症）。</p>
+  <h3><span lang="en">The bigger picture</span><span lang="zh-Hans">更宏观的意义</span></h3>
+  <p lang="en">The study marks a shift from "avoid at all costs" toward actively retraining the immune response, an approach now used for several foods. Whether the benefit lasts, and how to balance treatment risks against the risks of accidental exposure, are still being studied. Decisions about it belong with families and allergy specialists.</p>
+  <p lang="zh-Hans">这项研究标志着一种转变：从“不惜一切代价回避”，转向主动“重新训练”免疫反应，如今这种方法已用于多种食物。效果能否持久，以及如何权衡治疗风险与意外接触的风险，仍在研究之中。是否采用，应由家庭与过敏专科医生共同决定。</p>
+</main>
+
+<button class="glossary-toggle" id="glossBtn" aria-label="Open glossary" aria-expanded="false">&#x1F4D6;</button>
+<div class="glossary-panel" id="glossPanel" hidden>
+  <h3><span lang="en">Glossary</span><span lang="zh-Hans">术语表</span></h3>
+  <input type="search" id="glossSearch" aria-label="Search glossary">
+  <div id="glossList"></div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var LANG = 'en';
+  var T = {
+    en: {
+      switchTo: 'Switch to Chinese', btn: '中文', glossPh: 'Search terms...', glossNone: 'No terms match that search.',
+      modes: ['150 mL or more: 11 vs 0', '5 mL or more: 27 vs 0'], run: 'Shuffle 10,000 more times',
+      runsL: 'random shuffles so far', hitsL: 'shuffles as lopsided as the trial', exactL: 'exact probability (both directions)',
+      ax: 'successes that landed in group A', obs: 'trial',
+      note: function(n, h, s){ return n ? 'In ' + n.toLocaleString('en-US') + ' random splits, all ' + s + ' successes fell into one group ' + h + ' times. The paper used a chi-square test and reports P < .001; this shuffle test asks the same question in a way you can watch.' : 'Press the button to reshuffle the 60 children into two random groups of 30.'; },
+      pick: 'Pick an answer first.', correct: 'Correct. ', wrong: 'Not quite. ', check: 'Check answer',
+      extraGloss: [['Oral immunotherapy (OIT)', 'The current name for giving gradually increasing amounts of an allergenic food by mouth under medical supervision.'], ['Chi-square test', 'A standard test comparing counts between groups; the paper used it to compare tolerance rates.'], ['Eosinophilic oesophagitis', 'Inflammation of the gullet by eosinophils, a type of white blood cell; a known late complication of oral immunotherapy.']],
+      quiz: [
+        { q: 'Which children did this trial include?', o: ['Toddlers with mild milk allergy', 'Children aged 5–17 with very high milk IgE and a past severe reaction needing emergency care', 'Adults with lactose intolerance', 'Any child who dislikes milk'], a: 1, e: 'They were exactly the severe cases earlier studies had excluded, and all reacted to 0.8 mL of milk or less in a blind challenge.' },
+        { q: 'Why were children assigned by sealed envelopes?', o: ['To save paper', 'So no one could choose or predict who got treatment, keeping the groups comparable', 'Because parents asked', 'To blind the treatment'], a: 1, e: 'Random, concealed assignment prevents selection bias; the treatment itself was not blinded.' },
+        { q: 'What happened after one year in the treated group?', o: ['All 30 were cured', '11 took 150 mL or more, 16 took 5–150 mL, and 3 stopped', 'None improved', 'Half had grade 5 reactions'], a: 1, e: 'In the milk-free group, all 30 still reacted in a second blind challenge.' },
+        { q: 'How common were reactions during treatment?', o: ['Rare', 'Very common: every treated child had some, and epinephrine was injected 5 times in total', 'Only in the control group', 'Never at home'], a: 1, e: '4 injections in hospital and 1 at home; no grade 5 reactions occurred.' },
+        { q: 'What is the difference between desensitization and lasting tolerance?', o: ['There is none', 'Desensitization may fade if the food is stopped; tolerance persists', 'Tolerance needs injections', 'Desensitization is permanent'], a: 1, e: 'This one-year study could not tell which was achieved; the authors advise continuing daily milk.' },
+        { q: 'What does P < .001 mean here?', o: ['The treatment is 99.9% safe', 'A split this lopsided would be very unlikely if treatment had no effect', '0.1% of children improved', 'The study had 1,000 children'], a: 1, e: 'It concerns chance, not safety or effect size; the shuffle simulation shows the same idea.' }
+      ]
+    },
+    zh: {
+      switchTo: 'Switch to English', btn: 'EN', glossPh: '搜索术语……', glossNone: '没有匹配的术语。',
+      modes: ['≥ 150 毫升：11 比 0', '≥ 5 毫升：27 比 0'], run: '再随机分组 10,000 次',
+      runsL: '已随机分组次数', hitsL: '与试验一样悬殊的次数', exactL: '精确概率（双向）',
+      ax: '落在 A 组的成功人数', obs: '试验',
+      note: function(n, h, s){ return n ? '在 ' + n.toLocaleString('zh-CN') + ' 次随机分组中，全部 ' + s + ' 名成功者落在同一组的情况出现了 ' + h + ' 次。论文用的是卡方检验，报告 P < .001；这个“洗牌”检验用看得见的方式回答同一个问题。' : '点击按钮，把 60 名儿童随机重新分成两组，每组 30 人。'; },
+      pick: '请先选一个答案。', correct: '答对了。', wrong: '不太对。', check: '核对答案',
+      extraGloss: [['口服免疫治疗（OIT）', '在医生监护下，经口给予逐渐增加的过敏食物，是 SOTI 现在的通用名称。'], ['卡方检验（chi-square test）', '比较各组计数的标准统计检验；论文用它比较两组的耐受比例。'], ['嗜酸性粒细胞性食管炎（eosinophilic oesophagitis）', '由嗜酸性粒细胞（一种白细胞）引起的食管炎症；是口服免疫治疗已知的晚期并发症。']],
+      quiz: [
+        { q: '这项试验纳入了哪些儿童？', o: ['轻度牛奶过敏的幼儿', '5–17 岁、牛奶 IgE 极高、曾有需要急诊处理的严重反应的儿童', '乳糖不耐受的成人', '任何不爱喝奶的孩子'], a: 1, e: '他们正是以前研究所排除的重症儿童，而且在盲法激发试验中都对 0.8 毫升及以下的牛奶有反应。' },
+        { q: '为什么用密封信封分组？', o: ['为了节省纸张', '让谁都无法挑选或预测谁接受治疗，保证两组可比', '因为家长要求', '为了让治疗设盲'], a: 1, e: '随机且隐藏的分组能防止选择偏倚；治疗本身并未设盲。' },
+        { q: '一年后治疗组情况如何？', o: ['30 人全部治愈', '11 人能喝 150 毫升或以上，16 人能喝 5–150 毫升，3 人中止', '没有人好转', '一半人出现 5 级反应'], a: 1, e: '无奶组 30 人在第二次盲法激发试验中仍然全部过敏。' },
+        { q: '治疗过程中过敏反应有多常见？', o: ['很少', '非常常见：每个治疗儿童都出现过，肾上腺素总共注射了 5 次', '只在对照组出现', '在家从未发生'], a: 1, e: '住院期间注射 4 次，居家期间 1 次；没有出现 5 级反应。' },
+        { q: '脱敏和长期耐受有什么区别？', o: ['没有区别', '停吃这种食物后，脱敏效果可能消失；耐受则会持续', '耐受需要打针', '脱敏是永久的'], a: 1, e: '这项为期一年的研究无法判断达到的是哪一种；作者建议每天继续喝奶。' },
+        { q: '这里的 P < .001 是什么意思？', o: ['治疗 99.9% 安全', '如果治疗没有作用，出现这么悬殊的结果是非常不可能的', '0.1% 的儿童好转', '研究有 1000 名儿童'], a: 1, e: '它说的是“巧合的可能性”，与安全性或效果大小无关；上面的洗牌模拟展示的是同一个思路。' }
+      ]
+    }
+  };
+  function t(k){ return T[LANG][k]; }
+
+  // ---- language switching ----
+  var listeners = [];
+  function setLang(l, save){
+    LANG = l;
+    document.documentElement.setAttribute('data-lang', l);
+    document.documentElement.lang = l === 'zh' ? 'zh-Hans' : 'en';
+    var b = $('langBtn'); b.textContent = t('btn'); b.setAttribute('aria-label', t('switchTo'));
+    $('glossSearch').placeholder = t('glossPh');
+    document.querySelectorAll('video[data-en]').forEach(function(v){ var src = v.getAttribute(l === 'zh' ? 'data-zh' : 'data-en'); if (v.getAttribute('src') !== src) { v.setAttribute('src', src); try { v.load(); var p = v.play(); if (p && p.catch) p.catch(function(){}); } catch (e) {} } });
+    if (save) { try { localStorage.setItem('lang', l); } catch (e) {} }
+    listeners.forEach(function(fn){ fn(); });
+  }
+  $('langBtn').addEventListener('click', function(){ setLang(LANG === 'en' ? 'zh' : 'en', true); });
+  document.querySelectorAll('.lang-link').forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault(); setLang(a.getAttribute('data-to'), true); }); });
+
+  // ---- glossary ----
+  var GL = { en: [], zh: [] };
+  (function(){
+    var seen = { en: {}, zh: {} };
+    document.querySelectorAll('.term').forEach(function(el){
+      var tip = el.querySelector('.tooltip'); if (!tip) return;
+      var host = el.closest('[lang]'), lang = host && host.getAttribute('lang') === 'zh-Hans' ? 'zh' : 'en';
+      var name = el.childNodes[0].textContent.trim(), key = name.toLowerCase();
+      if (seen[lang][key]) return; seen[lang][key] = 1;
+      GL[lang].push({ name: name.charAt(0).toUpperCase() + name.slice(1), def: tip.textContent.trim() });
+    });
+    ['en', 'zh'].forEach(function(l){ T[l].extraGloss.forEach(function(x){ GL[l].push({ name: x[0], def: x[1] }); }); GL[l].sort(function(a, b){ return a.name.localeCompare(b.name, l === 'zh' ? 'zh-Hans' : 'en'); }); });
+  })();
+  var list = $('glossList');
+  function renderGloss(){
+    var q = ($('glossSearch').value || '').toLowerCase(); list.innerHTML = ''; var n = 0;
+    GL[LANG].forEach(function(e){
+      if (q && e.name.toLowerCase().indexOf(q) < 0 && e.def.toLowerCase().indexOf(q) < 0) return;
+      var d = document.createElement('div'); d.className = 'glossary-entry';
+      var s = document.createElement('strong'); s.textContent = e.name;
+      var p = document.createElement('p'); p.textContent = e.def;
+      d.appendChild(s); d.appendChild(p); list.appendChild(d); n++;
+    });
+    if (!n) { var m = document.createElement('p'); m.className = 'glossary-empty'; m.textContent = t('glossNone'); list.appendChild(m); }
+  }
+  listeners.push(renderGloss);
+  var panel = $('glossPanel'), gbtn = $('glossBtn');
+  gbtn.addEventListener('click', function(){ panel.hidden = !panel.hidden; gbtn.setAttribute('aria-expanded', String(!panel.hidden)); if (!panel.hidden) $('glossSearch').focus(); });
+  $('glossSearch').addEventListener('input', renderGloss);
+
+  // ---- mobile TOC drawer ----
+  var sb = $('sidebar'), ov = $('overlay');
+  function closeToc(){ sb.classList.remove('mobile-open'); ov.classList.remove('active'); }
+  $('tocBtn').addEventListener('click', function(){ sb.classList.add('mobile-open'); ov.classList.add('active'); });
+  ov.addEventListener('click', closeToc);
+  sb.querySelectorAll('nav a').forEach(function(a){ a.addEventListener('click', closeToc); });
+
+  // ---- progress and active section ----
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var sections = links.map(function(a){ return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+  var bar = $('progress');
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? (window.scrollY / h * 100) : 0) + '%';
+    var current = sections[0].id;
+    sections.forEach(function(s){ if (s.getBoundingClientRect().top <= 120) current = s.id; });
+    if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50) current = sections[sections.length - 1].id;
+    links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  // ---- permutation (shuffle) test ----
+  var NS = 'http://www.w3.org/2000/svg';
+  function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  var SUCC = [11, 27], mode = 0, runs = [0, 0], hist = [[], []], hits = [0, 0];
+  function lgam(n){ var s = 0; for (var i = 2; i <= n; i++) s += Math.log(i); return s; }
+  function lC(n, k){ return lgam(n) - lgam(k) - lgam(n - k); }
+  function exact(s){ return Math.min(1, 2 * Math.exp(lC(30, s) - lC(60, s))); }
+  var seed = 12345; function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  function shuffleRun(n){ var s = SUCC[mode], h = hist[mode]; if (!h.length) for (var k = 0; k <= s; k++) h.push(0);
+    var arr = []; for (var i = 0; i < 60; i++) arr.push(i < s ? 1 : 0);
+    for (var r = 0; r < n; r++) { for (var j = 59; j > 0; j--) { var q = Math.floor(rnd() * (j + 1)), tmp = arr[j]; arr[j] = arr[q]; arr[q] = tmp; }
+      var inA = 0; for (var m = 0; m < 30; m++) inA += arr[m]; h[inA]++; if (inA === s || inA === 0) hits[mode]++; }
+    runs[mode] += n; }
+  function fmtP(p){ if (p < 1e-6) return '< 0.000001'; return p.toPrecision(2); }
+  function renderPerm(){
+    var mr = $('permMode'); mr.innerHTML = '';
+    t('modes').forEach(function(lbl, k){ var b = document.createElement('button'); b.type = 'button'; b.className = 'filter-btn'; b.textContent = lbl; b.setAttribute('aria-pressed', String(mode === k)); b.addEventListener('click', function(){ mode = k; renderPerm(); }); mr.appendChild(b); });
+    $('permRun').textContent = t('run');
+    var s = SUCC[mode], n = runs[mode], h = hist[mode];
+    $('oRuns').textContent = n.toLocaleString(LANG === 'zh' ? 'zh-CN' : 'en-US'); $('oRunsL').textContent = t('runsL');
+    $('oHits').textContent = hits[mode]; $('oHitsL').textContent = t('hitsL');
+    $('oExact').textContent = fmtP(exact(s)); $('oExactL').textContent = t('exactL');
+    $('permNote').textContent = t('note')(n, hits[mode], s);
+    var svg = $('permSvg'); while (svg.firstChild) svg.removeChild(svg.firstChild);
+    function E(tag, at, txt){ var e = document.createElementNS(NS, tag); for (var k in at) e.setAttribute(k, at[k]); if (txt != null) e.textContent = txt; svg.appendChild(e); return e; }
+    var L = 30, R = 580, B = 160, Tp = 20, w = (R - L) / (s + 1), mx = 1; h.forEach(function(v){ if (v > mx) mx = v; });
+    E('line', { x1: L, x2: R, y1: B, y2: B, stroke: css('--border') });
+    for (var k = 0; k <= s; k++) { var v = h.length ? h[k] : 0, ht = v / mx * (B - Tp), ext = (k === 0 || k === s);
+      E('rect', { x: L + k * w + w * 0.12, y: B - ht, width: w * 0.76, height: Math.max(ht, ext ? 2 : 0), fill: ext ? css('--red') : css('--teal'), 'fill-opacity': ext ? 1 : 0.7 });
+      if (s <= 11 || k % 3 === 0 || k === s) E('text', { x: L + (k + 0.5) * w, y: B + 15, 'text-anchor': 'middle', 'font-size': 11, fill: css('--text-muted') }, k); }
+    E('text', { x: L + (s + 0.5) * w, y: Tp + 4, 'text-anchor': 'end', 'font-size': 11, fill: css('--red') }, t('obs') + ' ↓');
+    E('text', { x: R, y: B + 34, 'text-anchor': 'end', 'font-size': 11, fill: css('--text-muted') }, t('ax'));
+  }
+  $('permRun').addEventListener('click', function(){ shuffleRun(10000); renderPerm(); });
+  listeners.push(renderPerm);
+
+  // ---- quiz (state kept across language switches) ----
+  var answers = {}, checked = {};
+  function renderQuiz(){
+    var qc = $('quiz-container'); qc.innerHTML = '';
+    t('quiz').forEach(function(item, qi){
+      var box = document.createElement('div'); box.className = 'quiz';
+      var h = document.createElement('div'); h.className = 'quiz-question'; h.textContent = item.q; box.appendChild(h);
+      item.o.forEach(function(opt, oi){
+        var lab = document.createElement('label'), r = document.createElement('input');
+        r.type = 'radio'; r.name = 'q' + qi; r.value = oi; r.id = 'q' + qi + 'o' + oi; if (answers[qi] === oi) r.checked = true;
+        r.addEventListener('change', function(){ answers[qi] = oi; });
+        lab.setAttribute('for', r.id); lab.appendChild(r);
+        var sp = document.createElement('span'); sp.textContent = opt; lab.appendChild(sp); box.appendChild(lab);
+      });
+      var b = document.createElement('button'); b.className = 'quiz-btn'; b.type = 'button'; b.textContent = t('check'); box.appendChild(b);
+      var fb = document.createElement('div'); fb.className = 'feedback'; fb.hidden = true; box.appendChild(fb);
+      function show(){
+        fb.hidden = false;
+        if (answers[qi] == null) { fb.className = 'feedback wrong'; fb.textContent = t('pick'); return; }
+        var ok = answers[qi] === item.a; fb.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+        fb.textContent = (ok ? t('correct') : t('wrong')) + item.e;
+      }
+      b.addEventListener('click', function(){ checked[qi] = true; show(); });
+      if (checked[qi]) show();
+      qc.appendChild(box);
+    });
+  }
+  listeners.push(renderQuiz);
+
+  var start = 'en'; try { if (localStorage.getItem('lang') === 'zh') start = 'zh'; } catch (e) {}
+  setLang(start, false);
+})();
+</script>
+
+</body>
+</html>

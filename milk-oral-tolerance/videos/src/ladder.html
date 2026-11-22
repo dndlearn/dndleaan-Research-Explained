@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>@font-face { font-family: 'Space Mono'; src: url('sm400.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Space Mono'; src: url('sm700.woff2') format('woff2'); font-weight: 700; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+</style></head><body>
+<div data-composition-id="ladder" data-width="1920" data-height="540" data-start="0" data-duration="14">
+  <div class="scene">
+    <div class="title">Raising the amount a child can take</div>
+    <div class="row">
+      <svg id="pl" width="1360" height="420" viewBox="0 0 1360 420"></svg>
+      <div class="leg"><div><span class="sw a"></span>SOTI group</div><div><span class="sw b"></span>milk-free diet</div><div><span class="sw r"></span>reacted before</div></div>
+    </div>
+  </div>
+  <style>
+    [data-composition-id="ladder"] { position: relative; overflow: hidden; background: #011627; width: 1920px; height: 540px; font-family: 'Space Mono', monospace; color: #FDFFFC; }
+    .scene { width: 1920px; height: 540px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 30px; }
+    .title { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: 700; white-space: nowrap; }
+    .row { display: flex; gap: 40px; align-items: center; }
+    .leg { display: flex; flex-direction: column; gap: 22px; font-size: 30px; }
+    .sw { display: inline-block; width: 40px; height: 10px; margin-right: 14px; vertical-align: middle; }
+    .sw.a { background: #2EC4B6; } .sw.b { background: #8fa3bf; } .sw.r { background: #E71D36; opacity: 0.6; height: 22px; }
+    svg text { font-family: 'Space Mono', monospace; } svg text:not([fill]) { fill: #FDFFFC; }
+  </style>
+  <script src="gsap.min.js"></script>
+  <script>
+    var NS = 'http://www.w3.org/2000/svg', pl = document.getElementById('pl');
+    function E(tag, at, txt){ var e = document.createElementNS(NS, tag); for (var k in at) e.setAttribute(k, at[k]); if (txt != null) e.textContent = txt; pl.appendChild(e); return e; }
+    var L = 200, R = 1250, B = 340, T = 20;
+    function Y(ml){ return B - (Math.log10(ml) + 2) / (Math.log10(300) + 2) * (B - T); }
+    function X(f){ return L + f * (R - L); }   // 0..1 = start..1 year (hospital phase stretched to first 15%)
+    E('rect', { x: L, y: Y(0.8), width: R - L, height: B - Y(0.8), fill: '#E71D36', 'fill-opacity': 0.25 });
+    E('line', { x1: L, x2: R, y1: B, y2: B, stroke: '#415A77', 'stroke-width': 3 }); E('line', { x1: L, x2: L, y1: B, y2: T, stroke: '#415A77', 'stroke-width': 3 });
+    [[0.025, 'drops'], [1, '1 mL'], [20, '20 mL'], [150, '150 mL']].forEach(function(a){ E('text', { x: L - 14, y: Y(a[0]) + 10, 'font-size': 28, 'text-anchor': 'end' }, a[1]); E('line', { x1: L, x2: R, y1: Y(a[0]), y2: Y(a[0]), stroke: '#415A77', 'stroke-dasharray': '4 8' }); });
+    E('line', { x1: X(0.15), x2: X(0.15), y1: B, y2: T, stroke: '#415A77', 'stroke-width': 2 });
+    E('text', { x: X(0.075), y: B + 36, 'font-size': 28, 'text-anchor': 'middle' }, '10 days');
+    E('text', { x: X(0.57), y: B + 36, 'font-size': 28, 'text-anchor': 'middle' }, 'at home');
+    E('text', { x: R, y: B + 72, 'font-size': 28, 'text-anchor': 'end' }, '1 year');
+    function path(pts, col, w){ var d = pts.map(function(p, i){ return (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1); }).join(' '); var e = E('path', { d: d, fill: 'none', stroke: col, 'stroke-width': w, 'stroke-linecap': 'round' }); var len = e.getTotalLength(); e.setAttribute('stroke-dasharray', len); e.setAttribute('stroke-dashoffset', len); return e; }
+    var b = path([[0, 0.3], [1, 0.3]], '#8fa3bf', 6);
+    var a = path([[0, 0.025], [0.03, 0.2], [0.07, 1.5], [0.11, 6], [0.15, 20]], '#2EC4B6', 7);
+    var a1 = path([[0.15, 20], [0.5, 70], [0.8, 150], [1, 200]], '#3fb950', 6);
+    var a2 = path([[0.15, 8], [0.5, 15], [0.8, 30], [1, 40]], '#FF9F1C', 6);
+    var a3 = path([[0.15, 3], [0.3, 2], [0.45, 0.9]], '#E71D36', 6);
+    var la1 = E('text', { x: R + 10, y: Y(200) + 10, 'font-size': 28, fill: '#3fb950', opacity: 0 }, '11');
+    var la2 = E('text', { x: R + 10, y: Y(40) + 10, 'font-size': 28, fill: '#FF9F1C', opacity: 0 }, '16');
+    var la3 = E('text', { x: X(0.45) + 12, y: Y(0.9) - 8, 'font-size': 28, fill: '#E71D36', opacity: 0 }, '3');
+    var lb = E('text', { x: R + 10, y: Y(0.3) + 10, 'font-size': 28, fill: '#8fa3bf', opacity: 0 }, '30');
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    gsap.set('.leg div', { opacity: 0 });
+    tl.to('.leg div:nth-child(3)', { opacity: 1, duration: 0.4 }, 0.4);
+    tl.to('.leg div:nth-child(1)', { opacity: 1, duration: 0.4 }, 1.2);
+    tl.to(a, { attr: { 'stroke-dashoffset': 0 }, duration: 2.4, ease: 'none' }, 1.4);
+    tl.to([a1, a2, a3], { attr: { 'stroke-dashoffset': 0 }, duration: 3.2, ease: 'none' }, 4.0);
+    tl.to([la1, la2, la3], { opacity: 1, duration: 0.4 }, 7.2);
+    tl.to('.leg div:nth-child(2)', { opacity: 1, duration: 0.4 }, 8.2);
+    tl.to(b, { attr: { 'stroke-dashoffset': 0 }, duration: 2.0, ease: 'none' }, 8.4);
+    tl.to(lb, { opacity: 1, duration: 0.4 }, 10.4);
+    tl.to({}, { duration: 3.2 }, 10.8);
+    window.__timelines["ladder"] = tl;
+  </script>
+</div></body></html>

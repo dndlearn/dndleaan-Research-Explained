@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>@font-face { font-family: 'Space Mono'; src: url('sm400.woff2') format('woff2'); font-weight: 400; }
+@font-face { font-family: 'Space Mono'; src: url('sm700.woff2') format('woff2'); font-weight: 700; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+</style></head><body>
+<div data-composition-id="outcomes" data-width="1920" data-height="540" data-start="0" data-duration="12">
+  <div class="scene">
+    <div class="title">After one year: 30 children per group</div>
+    <div class="row">
+      <div class="grp"><div class="gh">SOTI</div><div class="waf" id="WA"></div></div>
+      <div class="key"><div><span class="d g"></span>≥ 150 mL 11</div><div><span class="d o"></span>5–150 mL 16</div><div><span class="d r"></span>stopped 3</div><div><span class="d s"></span>still reacts</div></div>
+      <div class="grp"><div class="gh">milk-free diet</div><div class="waf" id="WB"></div></div>
+    </div>
+  </div>
+  <style>
+    [data-composition-id="outcomes"] { position: relative; overflow: hidden; background: #011627; width: 1920px; height: 540px; font-family: 'Space Mono', monospace; color: #FDFFFC; }
+    .scene { width: 1920px; height: 540px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 34px; }
+    .title { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 48px; font-weight: 700; white-space: nowrap; }
+    .row { display: flex; gap: 70px; align-items: center; }
+    .grp { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .gh { font-size: 32px; font-weight: 700; color: #FF9F1C; }
+    .waf { display: grid; grid-template-columns: repeat(6, 54px); gap: 12px; }
+    .c { width: 54px; height: 54px; border-radius: 50%; background: #8fa3bf; }
+    .key { display: flex; flex-direction: column; gap: 22px; font-size: 30px; }
+    .d { display: inline-block; width: 30px; height: 30px; border-radius: 50%; margin-right: 14px; vertical-align: middle; }
+    .d.g { background: #3fb950; } .d.o { background: #FF9F1C; } .d.r { background: #E71D36; } .d.s { background: #8fa3bf; }
+  </style>
+  <script src="gsap.min.js"></script>
+  <script>
+    function fill(id){ var w = document.getElementById(id), a = []; for (var i = 0; i < 30; i++) { var c = document.createElement('div'); c.className = 'c'; w.appendChild(c); a.push(c); } return a; }
+    var A = fill('WA'), Bc = fill('WB');
+    window.__timelines = window.__timelines || {};
+    var tl = gsap.timeline({ paused: true });
+    gsap.set('.key div', { opacity: 0 });
+    tl.from(A.concat(Bc), { scale: 0, duration: 0.3, stagger: 0.02 }, 0.3);
+    tl.to('.key div:nth-child(4)', { opacity: 1, duration: 0.4 }, 1.8);
+    tl.to(A.slice(0, 11), { backgroundColor: '#3fb950', duration: 0.3, stagger: 0.08 }, 2.6);
+    tl.to('.key div:nth-child(1)', { opacity: 1, duration: 0.4 }, 2.6);
+    tl.to(A.slice(11, 27), { backgroundColor: '#FF9F1C', duration: 0.3, stagger: 0.08 }, 4.2);
+    tl.to('.key div:nth-child(2)', { opacity: 1, duration: 0.4 }, 4.2);
+    tl.to(A.slice(27), { backgroundColor: '#E71D36', duration: 0.3, stagger: 0.1 }, 6.0);
+    tl.to('.key div:nth-child(3)', { opacity: 1, duration: 0.4 }, 6.0);
+    tl.to(Bc, { scale: 1.12, duration: 0.25, yoyo: true, repeat: 1, stagger: 0.02 }, 7.2);
+    tl.to({}, { duration: 3.4 }, 8.6);
+    window.__timelines["outcomes"] = tl;
+  </script>
+</div></body></html>
